@@ -35,11 +35,10 @@ def parse_POST_body(event):
         payload = base64.b64decode(payload).decode("utf-8")
     return json.loads(payload)
 
-def cors_headers(method):
+def add_CORS_headers(method):
     def decorator(fn):
         def wrapped(event, *args, **kwargs):
             resp = fn(event, *args, **kwargs)
-            resp["headers"].setdefault({})
             resp["headers"].update({
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent",
