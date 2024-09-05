@@ -1,14 +1,14 @@
 ### short
 
-- jsonschema
+- github project
 
 - test for assert_GET_parameters
 
 ### medium
 
-- ask chagpt re decorator ordering
+- assert_GET_parameters to permit regex value matching
 
-- github project
+- ask chagpt re apigw decorator ordering
 
 ##### s3 
 
@@ -22,4 +22,5 @@
 
 ### done
 
+- jsonschema
 - post body parsing as decorator

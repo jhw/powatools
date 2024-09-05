@@ -5,6 +5,19 @@ import base64
 import json
 import unittest
 
+HelloWorldSchema = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "hello": {
+            "type": "string",
+            "enum": ["world"]
+        }
+    },
+    "required": ["hello"],
+    "additionalProperties": False
+}
+
 class ApiGatewayTest(unittest.TestCase):
 
     def test_wrap_apigateway_200(self):
@@ -63,9 +76,9 @@ class ApiGatewayTest(unittest.TestCase):
         for key in ["int", "float"]:
             self.assertTrue(isinstance(body[key], eval(key)))
 
-    def test_handle_JSON_POST_body_200(self):
+    def test_handle_JSON_POST_body_200(self, schema = HelloWorldSchema):
         @wrap_apigateway
-        @handle_JSON_POST_body()
+        @handle_JSON_POST_body(schema)
         def handler(event, context = None):
             return event["json-body"]
         event = {"body": base64.b64encode(json.dumps({"hello": "world"}).encode("utf-8")),
@@ -73,12 +86,12 @@ class ApiGatewayTest(unittest.TestCase):
         resp = handler(event = event)
         self.assertTrue("statusCode" in resp)
         self.assertEqual(resp["statusCode"], 200)
-        self.assertTrue("body" in resp);
+        self.assertTrue("body" in resp)
         body = json.loads(resp["body"])
         self.assertTrue("hello" in body)
         self.assertEqual(body["hello"], "world")
 
-    def test_handle_JSON_POST_body_400(self):
+    def test_handle_JSON_POST_body_400_bad_json(self):
         @wrap_apigateway
         @handle_JSON_POST_body()
         def handler(event, context = None):
@@ -88,9 +101,21 @@ class ApiGatewayTest(unittest.TestCase):
         resp = handler(event = event)
         self.assertTrue("statusCode" in resp)
         self.assertEqual(resp["statusCode"], 400)
-        self.assertTrue("body" in resp);
-        body = resp["body"]
-        self.assertEqual(body, "error json- loading POST body")
+        self.assertTrue("body" in resp)
+        self.assertTrue("error json- loading POST body" in resp["body"])
+
+    def test_handle_JSON_POST_body_400_bad_data(self, schema = HelloWorldSchema):
+        @wrap_apigateway
+        @handle_JSON_POST_body(schema)
+        def handler(event, context = None):
+            return event["json-body"]
+        event = {"body": base64.b64encode(json.dumps({"hello": "universe"}).encode("utf-8")),
+                 "isBase64Encoded": True}
+        resp = handler(event = event)
+        self.assertTrue("statusCode" in resp)
+        self.assertEqual(resp["statusCode"], 400)
+        self.assertTrue("body" in resp)
+        self.assertTrue("error validating schema" in resp["body"])
         
 if __name__ == "__main__":
     unittest.main()

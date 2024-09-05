@@ -1,16 +1,7 @@
 import base64
 import decimal
 import json
-
-class DecimalEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, decimal.Decimal):
-            float_val = float(obj)
-            if float_val.is_integer():
-                return int(float_val)
-            else:
-                return float_val
-        return super().default(obj)
+import jsonschema
 
 def assert_GET_parameters(parameters):
     def decorator(fn):
@@ -27,15 +18,8 @@ def assert_GET_parameters(parameters):
         return wrapped
     return decorator
 
-def parse_POST_body(event):
-    payload = event["body"]
-    if ("isBase64Encoded" in event and
-        event["isBase64Encoded"]):
-        payload = base64.b64decode(payload).decode("utf-8")
-    return json.loads(payload)
-
 def handle_JSON_POST_body(schema = None):
-    def parse_body(event):
+    def decode_body(event):
         if "body" not in event:
             raise RuntimeError("POST body not found in event")
         body = event["body"]
@@ -45,13 +29,25 @@ def handle_JSON_POST_body(schema = None):
                 body = base64.b64decode(body).decode("utf-8")
             except:
                 raise RuntimeError("error base64- decoding POST body")
+        return body
+    def parse_json(body):
         try:
             return json.loads(body)
         except:
             raise RuntimeError("error json- loading POST body")
+    def validate_schema(struct, schema):
+        try:
+            jsonschema.validate(instance = struct,
+                                schema = schema)
+        except jsonschema.exceptions.ValidationError as error:
+            raise RuntimeError(f"error validating schema against POST body: {error}")
     def decorator(fn):
         def wrapped(event, *args, **kwargs):
-            event["json-body"] = parse_body(event)
+            body = parse_json(decode_body(event))
+            if schema:
+                validate_schema(struct = body,
+                                schema = schema)
+            event["json-body"] = body
             return fn(event, *args, **kwargs)
         return wrapped
     return decorator
@@ -70,6 +66,15 @@ def CORS_headers(method):
     return decorator
 
 def wrap_apigateway(fn):
+    class DecimalEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, decimal.Decimal):
+                float_val = float(obj)
+                if float_val.is_integer():
+                    return int(float_val)
+                else:
+                    return float_val
+            return super().default(obj)
     def wrapped(event, *args, **kwargs):
         try:
             resp = fn(event, *args, **kwargs)
