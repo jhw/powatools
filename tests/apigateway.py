@@ -1,5 +1,5 @@
 from decimal import Decimal
-from powatools.apigateway import wrap_apigateway, CORS_headers, parse_POST_body
+from powatools.apigateway import wrap_apigateway, CORS_headers, handle_JSON_POST_body
 
 import base64
 import json
@@ -36,7 +36,7 @@ class ApiGatewayTest(unittest.TestCase):
         self.assertEqual(resp["body"], "oops")
 
     def test_CORS_headers(self, method = "GET"):
-        @CORS_headers(method)               
+        @CORS_headers(method)                               
         @wrap_apigateway
         def handler(event, context = None):
             return {"hello": "world"}
@@ -63,13 +63,35 @@ class ApiGatewayTest(unittest.TestCase):
         for key in ["int", "float"]:
             self.assertTrue(isinstance(body[key], eval(key)))
 
-    def test_parse_POST_body(self):
+    def test_handle_JSON_POST_body_200(self):
+        @wrap_apigateway
+        @handle_JSON_POST_body()
+        def handler(event, context = None):
+            return event["json-body"]
         event = {"body": base64.b64encode(json.dumps({"hello": "world"}).encode("utf-8")),
                  "isBase64Encoded": True}
-        body = parse_POST_body(event)
+        resp = handler(event = event)
+        self.assertTrue("statusCode" in resp)
+        self.assertEqual(resp["statusCode"], 200)
+        self.assertTrue("body" in resp);
+        body = json.loads(resp["body"])
         self.assertTrue("hello" in body)
         self.assertEqual(body["hello"], "world")
-            
+
+    def test_handle_JSON_POST_body_400(self):
+        @wrap_apigateway
+        @handle_JSON_POST_body()
+        def handler(event, context = None):
+            return event["json-body"]
+        event = {"body": base64.b64encode("garbage".encode("utf-8")),
+                 "isBase64Encoded": True}
+        resp = handler(event = event)
+        self.assertTrue("statusCode" in resp)
+        self.assertEqual(resp["statusCode"], 400)
+        self.assertTrue("body" in resp);
+        body = resp["body"]
+        self.assertEqual(body, "error json- loading POST body")
+        
 if __name__ == "__main__":
     unittest.main()
         

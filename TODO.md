@@ -1,10 +1,25 @@
 ### short
 
-- complete apigw tests
-- post body parsing as decorator
-- github project
+- jsonschema
+
+- test for assert_GET_parameters
 
 ### medium
 
-- s3 read/write json/zip
-- dynamodb update
+- ask chagpt re decorator ordering
+
+- github project
+
+##### s3 
+
+- get/put JSON
+- get/put zip
+
+##### dynamodb
+
+- update
+- fetch?
+
+### done
+
+- post body parsing as decorator

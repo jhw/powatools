@@ -34,6 +34,28 @@ def parse_POST_body(event):
         payload = base64.b64decode(payload).decode("utf-8")
     return json.loads(payload)
 
+def handle_JSON_POST_body(schema = None):
+    def parse_body(event):
+        if "body" not in event:
+            raise RuntimeError("POST body not found in event")
+        body = event["body"]
+        if ("isBase64Encoded" in event and
+            event["isBase64Encoded"]):
+            try:
+                body = base64.b64decode(body).decode("utf-8")
+            except:
+                raise RuntimeError("error base64- decoding POST body")
+        try:
+            return json.loads(body)
+        except:
+            raise RuntimeError("error json- loading POST body")
+    def decorator(fn):
+        def wrapped(event, *args, **kwargs):
+            event["json-body"] = parse_body(event)
+            return fn(event, *args, **kwargs)
+        return wrapped
+    return decorator
+
 def CORS_headers(method):
     def decorator(fn):
         def wrapped(event, *args, **kwargs):
