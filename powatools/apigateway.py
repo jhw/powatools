@@ -34,7 +34,7 @@ def parse_POST_body(event):
         payload = base64.b64decode(payload).decode("utf-8")
     return json.loads(payload)
 
-def add_CORS_headers(method):
+def CORS_headers(method):
     def decorator(fn):
         def wrapped(event, *args, **kwargs):
             resp = fn(event, *args, **kwargs)
