@@ -1,5 +1,5 @@
 from decimal import Decimal
-from powatools.apigateway import wrap_apigateway, CORS_headers, handle_JSON_POST_body
+from powatools.apigateway import wrap_apigateway, CORS_headers, handle_JSON_POST_body,  assert_GET_parameters
 
 import base64
 import json
@@ -116,6 +116,26 @@ class ApiGatewayTest(unittest.TestCase):
         self.assertEqual(resp["statusCode"], 400)
         self.assertTrue("body" in resp)
         self.assertTrue("error validating schema" in resp["body"])
+
+    def test_assert_GET_parameters_200(self):
+        @wrap_apigateway
+        @assert_GET_parameters(["hello"])
+        def handler(event, context = None):
+            return event["queryStringParameters"]
+        event = {"queryStringParameters": {"hello": "world"}}
+        resp = handler(event = event)
+        self.assertTrue("statusCode" in resp)
+        self.assertEqual(resp["statusCode"], 200)
+
+    def test_assert_GET_parameters_400(self):
+        @wrap_apigateway
+        @assert_GET_parameters(["hello"])
+        def handler(event, context = None):
+            return event["queryStringParameters"]
+        event = {"queryStringParameters": {"foo": "bar"}}
+        resp = handler(event = event)
+        self.assertTrue("statusCode" in resp)
+        self.assertEqual(resp["statusCode"], 400)
         
 if __name__ == "__main__":
     unittest.main()

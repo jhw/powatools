@@ -1,17 +1,14 @@
 ### short
 
-- test for assert_GET_parameters
+- assert_GET_parameters to permit regex value matching
+- ask chagpt re apigw decorator ordering
 
 ### medium
-
-- assert_GET_parameters to permit regex value matching
-
-- ask chagpt re apigw decorator ordering
 
 ##### s3 
 
 - get/put JSON
-- get/put zip
+- get/put zip?
 
 ##### dynamodb
 
@@ -20,6 +17,7 @@
 
 ### done
 
+- test for assert_GET_parameters
 - github project
 - jsonschema
 - post body parsing as decorator
