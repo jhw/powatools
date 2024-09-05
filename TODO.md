@@ -1,7 +1,5 @@
 ### short
 
-- github project
-
 - test for assert_GET_parameters
 
 ### medium
@@ -22,5 +20,6 @@
 
 ### done
 
+- github project
 - jsonschema
 - post body parsing as decorator
