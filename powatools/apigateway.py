@@ -1,11 +1,10 @@
-from decimal import Decimal
-
 import base64
+import decimal
 import json
 
-class DecimalEncoder(JSONEncoder):
+class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, Decimal):
+        if isinstance(obj, decimal.Decimal):
             float_val = float(obj)
             if float_val.is_integer():
                 return int(float_val)
@@ -48,7 +47,7 @@ def add_CORS_headers(method):
         return wrapped
     return decorator
 
-def wrap_apigw(fn):
+def wrap_apigateway(fn):
     def wrapped(event, *args, **kwargs):
         try:
             resp = fn(event, *args, **kwargs)
