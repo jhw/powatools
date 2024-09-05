@@ -1,6 +1,7 @@
 ### short
 
-- apigw tests
+- complete apigw tests
+- post body parsing as decorator
 - github project
 
 ### medium

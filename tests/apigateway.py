@@ -1,6 +1,7 @@
 from decimal import Decimal
-from powatools.apigateway import wrap_apigateway, CORS_headers
+from powatools.apigateway import wrap_apigateway, CORS_headers, parse_POST_body
 
+import base64
 import json
 import unittest
 
@@ -61,7 +62,14 @@ class ApiGatewayTest(unittest.TestCase):
         body = json.loads(resp["body"])
         for key in ["int", "float"]:
             self.assertTrue(isinstance(body[key], eval(key)))
-                
+
+    def test_parse_POST_body(self):
+        event = {"body": base64.b64encode(json.dumps({"hello": "world"}).encode("utf-8")),
+                 "isBase64Encoded": True}
+        body = parse_POST_body(event)
+        self.assertTrue("hello" in body)
+        self.assertEqual(body["hello"], "world")
+            
 if __name__ == "__main__":
     unittest.main()
         
