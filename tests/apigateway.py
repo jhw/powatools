@@ -119,7 +119,7 @@ class ApiGatewayTest(unittest.TestCase):
 
     def test_assert_GET_parameters_200(self):
         @wrap_apigateway
-        @assert_GET_parameters(["hello"])
+        @assert_GET_parameters({"hello": "world"})
         def handler(event, context = None):
             return event["queryStringParameters"]
         event = {"queryStringParameters": {"hello": "world"}}
@@ -127,15 +127,29 @@ class ApiGatewayTest(unittest.TestCase):
         self.assertTrue("statusCode" in resp)
         self.assertEqual(resp["statusCode"], 200)
 
-    def test_assert_GET_parameters_400(self):
+    def test_assert_GET_parameters_400_missing(self):
         @wrap_apigateway
-        @assert_GET_parameters(["hello"])
+        @assert_GET_parameters({"hello": "world"})
         def handler(event, context = None):
             return event["queryStringParameters"]
         event = {"queryStringParameters": {"foo": "bar"}}
         resp = handler(event = event)
         self.assertTrue("statusCode" in resp)
         self.assertEqual(resp["statusCode"], 400)
+        self.assertTrue("body" in resp)
+        self.assertTrue("missing" in resp["body"])
+
+    def test_assert_GET_parameters_400_invalid(self):
+        @wrap_apigateway
+        @assert_GET_parameters({"hello": "world"})
+        def handler(event, context = None):
+            return event["queryStringParameters"]
+        event = {"queryStringParameters": {"hello": "earth"}}
+        resp = handler(event = event)
+        self.assertTrue("statusCode" in resp)
+        self.assertEqual(resp["statusCode"], 400)
+        self.assertTrue("body" in resp)
+        self.assertTrue("invalid" in resp["body"])
         
 if __name__ == "__main__":
     unittest.main()

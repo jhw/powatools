@@ -1,22 +1,17 @@
 ### short
 
-- assert_GET_parameters to permit regex value matching
+- s3 get/put JSON
+
 - ask chagpt re apigw decorator ordering
 
 ### medium
 
-##### s3 
-
-- get/put JSON
-- get/put zip?
-
-##### dynamodb
-
-- update
-- fetch?
+- dynamodb update
+- dynamodb fetch?
 
 ### done
 
+- assert_GET_parameters to permit regex value matching
 - test for assert_GET_parameters
 - github project
 - jsonschema

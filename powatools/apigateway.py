@@ -2,18 +2,25 @@ import base64
 import decimal
 import json
 import jsonschema
+import re
 
-def assert_GET_parameters(parameters):
+def assert_GET_parameters(patterns):
     def decorator(fn):
         def wrapped(event, context = None, **kwargs):
             if "queryStringParameters" not in event:
                 raise RuntimeError("event is missing querystring")
-            missing = []
-            for parameter in parameters:
-                if parameter not in event["queryStringParameters"]:
-                    missing.append(parameter)
-            if missing != []:
-                raise RuntimeError("event is missing %s parameters" % ", ".join(missing))
+            parameters, errors = event["queryStringParameters"], []
+            for key in patterns:
+                if key not in parameters:
+                    errors.append(key)
+            if errors != []:
+                raise RuntimeError("missing parameters - %s" % ", ".join(errors))
+            errors = []
+            for key, pattern in patterns.items():
+                if not re.search(pattern, parameters[key]):
+                    errors.append(key)
+            if errors != []:
+                raise RuntimeError("invalid parameters - %s" % ", ".join(errors))
             return fn(event, context, **kwargs)
         return wrapped
     return decorator
