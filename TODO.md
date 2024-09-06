@@ -1,14 +1,13 @@
 ### short
 
-- s3 get/put JSON
-
 ### medium
 
-- dynamodb update
-- dynamodb fetch?
+- dynamodb get/put/update/query
 
 ### done
 
+- s3 delete object
+- s3 get/put JSON
 - ask chagpt re apigw decorator ordering
 - assert_GET_parameters to permit regex value matching
 - test for assert_GET_parameters
