@@ -25,7 +25,7 @@ def assert_GET_parameters(patterns):
         return wrapped
     return decorator
 
-def handle_JSON_POST_body(schema = None):
+def handle_POST_body(schema = None):
     def decode_body(event):
         if "body" not in event:
             raise RuntimeError("POST body not found in event")
@@ -59,20 +59,7 @@ def handle_JSON_POST_body(schema = None):
         return wrapped
     return decorator
 
-def CORS_headers(method):
-    def decorator(fn):
-        def wrapped(event, *args, **kwargs):
-            resp = fn(event, *args, **kwargs)
-            resp["headers"].update({
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent",
-                "Access-Control-Allow-Methods": f"OPTIONS,{method}"
-            })
-            return resp
-        return wrapped
-    return decorator
-
-def wrap_apigateway(fn):
+def wrap_apigateway(cors_method = None):
     class DecimalEncoder(json.JSONEncoder):
         def default(self, obj):
             if isinstance(obj, decimal.Decimal):
@@ -82,19 +69,30 @@ def wrap_apigateway(fn):
                 else:
                     return float_val
             return super().default(obj)
-    def wrapped(event, *args, **kwargs):
-        try:
-            resp = fn(event, *args, **kwargs)
-            return {"statusCode": 200,
-                    "headers": {"Content-Type": "application/json"},
-                    "body": json.dumps(resp,
-                                       cls = DecimalEncoder,
-                                       indent = 2)}
-        except RuntimeError as error:
-            return {"statusCode": 400,
-                    "headers": {"Content-Type": "text/plain"},
-                    "body": str(error)}
-    return wrapped
+    def decorator(fn):
+        headers = {}
+        if cors_method:
+            headers.update({
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent",
+                "Access-Control-Allow-Methods": f"OPTIONS,{cors_method}"
+            })
+        def wrapped(event, *args, **kwargs):
+            try:
+                resp = fn(event, *args, **kwargs)
+                headers["Content-Type"] = "application/json"
+                return {"statusCode": 200,
+                        "headers": headers,
+                        "body": json.dumps(resp,
+                                           cls = DecimalEncoder,
+                                           indent = 2)}
+            except RuntimeError as error:
+                headers["Content-Type"] = "text/plain"
+                return {"statusCode": 400,
+                        "headers": headers,
+                        "body": str(error)}
+        return wrapped
+    return decorator
 
 if __name__ == "__main__":
     pass
