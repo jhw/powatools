@@ -57,14 +57,14 @@ def filter_packages(root):
     return packages
     
 setuptools.setup(
-    name="powatoold",
-    version="0.0.1",
+    name="powatools",
+    version="0.0.2",
     author="jhw",
     author_email="justin.worrall@gmail.com",
     description="Some python serverless utilities for bundling with lambda",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/jhw/or-model",
+    url="https://github.com/jhw/powatools",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
